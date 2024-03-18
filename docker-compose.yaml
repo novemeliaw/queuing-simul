@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=ocr
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - ./data:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3000"
+    environment:
+      - PG_USER=admin
+      - PG_HOST=db
+      - PG_DB=ocr
+      - PG_PASS=password
+      - PG_PORT=5432
+      - RABBITMQ_URL=amqp://user:user@rabbitmq
+    restart: always
+    depends_on:
+      - rabbitmq
+      - db
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: user
